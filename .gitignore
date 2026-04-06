@@ -1,0 +1,18 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Data and Logs (Automatically ignored for privacy)
+*.csv
+*.json
+*.jsonl
+.env
+final_governance_report.md
+WORK_LOG.md

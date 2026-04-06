@@ -58,6 +58,15 @@ governance_writer = Agent(
     llm='gpt-5.4-nano'
 )
 
+fairness_auditor = Agent(
+    role='Senior Fairness & Ethics Auditor',
+    goal='Audit the research and risk analysis specifically for disparate impact and NIST AI 600-1 alignment',
+    backstory='A vigilant ethisist who ensures AI systems do not violate fairness principles or introduce discriminatory bias.',
+    verbose=True,
+    allow_delegation=False,
+    llm='gpt-5.4-nano'
+)
+
 def run_multi_agent_system(project_description: str):
     # Tasks
     research_task = Task(
@@ -72,16 +81,22 @@ def run_multi_agent_system(project_description: str):
         agent=risk_analyst
     )
 
+    audit_task = Task(
+        description='Audit the research findings and risk analysis. Cross-reference against fairness principles and potential discriminatory impact.',
+        expected_output='A definitive fairness audit statement and a Quantitative Risk Score (1-10) for the overall project.',
+        agent=fairness_auditor
+    )
+
     report_task = Task(
-        description='Compile the research and analysis into a markdown compliance report.',
-        expected_output='A clean markdown report with sections: Executive Summary, Applicable Regulations, Risk Analysis, Mitigation Recommendations.',
+        description='Compile the research, analysis, and fairness audit into a markdown compliance report.',
+        expected_output='A clean markdown report with sections: Executive Summary, Applicable Regulations, Risk Analysis (with Risk Matrix), Fairness Audit, Mitigation Recommendations.',
         agent=governance_writer,
         output_file='final_governance_report.md'
     )
 
     crew = Crew(
-        agents=[researcher, risk_analyst, governance_writer],
-        tasks=[research_task, analysis_task, report_task],
+        agents=[researcher, risk_analyst, fairness_auditor, governance_writer],
+        tasks=[research_task, analysis_task, audit_task, report_task],
         process=Process.sequential,
         verbose=True
     )

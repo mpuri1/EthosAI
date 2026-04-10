@@ -58,16 +58,23 @@ governance_writer = Agent(
     llm='gpt-5.4-nano'
 )
 
-fairness_auditor = Agent(
-    role='Senior Fairness & Ethics Auditor',
-    goal='Audit the research and risk analysis specifically for disparate impact and NIST AI 600-1 alignment',
-    backstory='A vigilant ethisist who ensures AI systems do not violate fairness principles or introduce discriminatory bias.',
-    verbose=True,
-    allow_delegation=False,
-    llm='gpt-5.4-nano'
-)
+def run_multi_agent_system(project_description: str, variant: str = "CONTROL"):
+    # Define Agents dynamic backstories based on variant
+    if variant == "TREATMENT":
+        auditor_backstory = 'An ultra-vigilant AI safety maximalist who prioritizes the precautionary principle and zero-tolerance for bias.'
+    else:
+        auditor_backstory = 'A vigilant ethicist who ensures AI systems do not violate fairness principles or introduce discriminatory bias.'
 
-def run_multi_agent_system(project_description: str):
+    fairness_auditor = Agent(
+        role='Senior Fairness & Ethics Auditor',
+        goal='Audit the research and risk analysis specifically for disparate impact and NIST AI 600-1 alignment',
+        backstory=auditor_backstory,
+        verbose=True,
+        allow_delegation=False,
+        llm='gpt-5.4-nano'
+    )
+
+    # Re-run Tasks with variant awareness
     # Tasks
     research_task = Task(
         description=f'Find regulations and internal policies relevant to this AI Project: "{project_description}". Use tools to search the web (Serper) and Local DB.',

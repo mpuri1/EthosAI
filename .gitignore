@@ -14,5 +14,4 @@ wheels/
 *.json
 *.jsonl
 .env
-final_governance_report.md
-WORK_LOG.md
+prn_docs/

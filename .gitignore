@@ -13,7 +13,7 @@ wheels/
 *.csv
 *.json
 *.jsonl
-.env
+# Project-specific Isolation (Private Artifacts)
 prn_docs/
 chroma_db/
-chroma_db/
+.env

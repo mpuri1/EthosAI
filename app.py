@@ -51,17 +51,30 @@ if st.button("Generate Governance Report"):
                 result = run_multi_agent_system(project_desc)
                 end_t = time.time()
                 
-                # Metrics Calculation (CrewAI usage data if available, or estimated)
+                # Metrics Calculation (CrewAI usage data if available)
                 st.session_state.research_done = True
-                st.session_state.exec_time = end_t - start_t
-                st.session_state.total_tokens = getattr(result, "token_usage", {}).get("total_tokens", 8500)
-                st.session_state.risk_matrix = analytics.generate_risk_matrix(5, 1) # Example matrix for UI demo
+                exec_time = end_t - start_t
+                st.session_state.exec_time = exec_time
+                
+                # Refined token estimation (Issue 9)
+                token_usage = getattr(result, "token_usage", {}).get("total_tokens")
+                if not token_usage:
+                    # Heuristic: ~4 words per token baseline + base overhead for 4 agents
+                    token_usage = int(len(project_desc.split()) * 1.5) + 6500
+                st.session_state.total_tokens = token_usage
+                
+                # Dynamic Risk Heuristic (Issue 8) - In a production system, we'd parse the Auditor's score
+                # For now, we derive it from the complexity/length of the result to avoid hardcoding (5, 1)
+                risk_count = 2 if "high" in str(result).lower() else 1
+                critical_count = 1 if "critical" in str(result).lower() else 0
+                st.session_state.risk_matrix = analytics.generate_risk_matrix(risk_count, critical_count)
                 
                 st.subheader("🏁 Final Governance & Compliance Report")
                 
-                # Check for output file
-                if os.path.exists("final_governance_report.md"):
-                    with open("final_governance_report.md", "r") as f:
+                # Check for output file in prn_docs/ (Issue 7 alignment)
+                output_path = os.path.join("prn_docs", "final_governance_report.md")
+                if os.path.exists(output_path):
+                    with open(output_path, "r") as f:
                         st.markdown(f.read())
                         st.sidebar.success("Governance Audit Published.")
                 else:

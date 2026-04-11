@@ -13,20 +13,29 @@ def run_experiment(project_desc):
     print("\n🚀 Starting GenAI Governance Experiment...")
     print(f"Project: {project_desc}")
 
+    # Artifact Hygiene: Ensure output dir exists
+    os.makedirs("prn_docs", exist_ok=True)
+
     # Variant A: Control
     print("\n--- Running Variant A (CONTROL) ---")
-    control_result = run_multi_agent_system(project_desc, variant="CONTROL")
-    with open("eval_control.md", "w") as f:
-        f.write(str(control_result))
+    try:
+        control_result = run_multi_agent_system(project_desc, variant="CONTROL")
+        with open(os.path.join("prn_docs", "eval_control.md"), "w") as f:
+            f.write(str(control_result))
+    except Exception as e:
+        print(f"❌ Error in CONTROL run: {e}")
 
     # Variant B: Treatment
     print("\n--- Running Variant B (TREATMENT) ---")
-    treatment_result = run_multi_agent_system(project_desc, variant="TREATMENT")
-    with open("eval_treatment.md", "w") as f:
-        f.write(str(treatment_result))
+    try:
+        treatment_result = run_multi_agent_system(project_desc, variant="TREATMENT")
+        with open(os.path.join("prn_docs", "eval_treatment.md"), "w") as f:
+            f.write(str(treatment_result))
+    except Exception as e:
+        print(f"❌ Error in TREATMENT run: {e}")
 
     print("\n✅ Experiment Run Complete.")
-    print("Files 'eval_control.md' and 'eval_treatment.md' are ready for side-by-side comparison.")
+    print("Files located in 'prn_docs/' for session isolation.")
 
 if __name__ == "__main__":
     test_project = "AI-powered credit scoring system for small businesses using social media data"

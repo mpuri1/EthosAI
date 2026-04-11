@@ -15,3 +15,5 @@ wheels/
 *.jsonl
 .env
 prn_docs/
+chroma_db/
+chroma_db/

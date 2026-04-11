@@ -1,5 +1,5 @@
-import json
 from typing import Dict, Any
+import time
 
 class ComplianceAnalytics:
     """
@@ -7,27 +7,32 @@ class ComplianceAnalytics:
     Tracks Token ROI and Quantitative Risk Severity.
     """
     
+    # Industry Baselines (Senior Legal Policy Auditor)
+    MANUAL_RESEARCH_BASE_HOURS = 6.0
+    GPT_5_4_NANO_COST_PER_MILLION = 0.05
+    
     def __init__(self, legal_research_hourly_rate: float = 250.0):
         self.legal_rate = legal_research_hourly_rate
-        # GPT-5.4 Nano estimate: $0.05 / 1M tokens
-        self.cost_per_million = 0.05
 
-    def calculate_research_roi(self, execution_time_sec: float, total_tokens: int) -> Dict[str, float]:
+    def calculate_research_roi(self, execution_time_sec: float, total_tokens: int) -> Dict[str, Any]:
         """
         Calculates the economic value of the multi-agent research.
         Compares agentic speed/cost against a Senior Legal Policy Auditor.
         """
-        # Assumptions: Human takes 6 hours for a thorough regulatory scan
-        manual_research_hours = 6.0
-        manual_cost = manual_research_hours * self.legal_rate
+        manual_cost = self.MANUAL_RESEARCH_BASE_HOURS * self.legal_rate
+        llm_cost = (total_tokens / 1_000_000) * self.GPT_5_4_NANO_COST_PER_MILLION
         
-        llm_cost = (total_tokens / 1_000_000) * self.cost_per_million
+        # Calculate Speed Advantage
+        human_seconds = self.MANUAL_RESEARCH_BASE_HOURS * 3600
+        speedup_x = human_seconds / max(execution_time_sec, 0.1)
         
         return {
             "manual_legal_cost": round(manual_cost, 2),
             "agent_token_cost": round(llm_cost, 6),
             "net_savings": round(manual_cost - llm_cost, 2),
-            "efficiency_multiplier": round(manual_cost / max(llm_cost, 0.000001), 1)
+            "efficiency_multiplier": round(manual_cost / max(llm_cost, 0.000001), 1),
+            "execution_time_sec": round(execution_time_sec, 2),
+            "speedup_factor": round(speedup_x, 1)
         }
 
     def generate_risk_matrix(self, risk_count: int, critical_count: int) -> Dict[str, Any]:

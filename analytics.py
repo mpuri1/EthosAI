@@ -87,6 +87,7 @@ class ComplianceForecaster:
         # Calculate drift (slope)
         drift = model.coef_[0]
 
+        # Scores represent risk level (higher = worse compliance), so negative drift is good.
         status = "IMPROVING" if drift < 0 else "STABLE" if drift == 0 else "DEGRADING"
 
         return {

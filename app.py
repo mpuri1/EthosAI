@@ -71,6 +71,7 @@ with col1:
                     # Track execution metrics for ROI panel
                     token_usage = getattr(result, "token_usage", {}).get("total_tokens")
                     if not token_usage:
+                        # Heuristic: ~1.5 tokens per word + 6500 base overhead for 4-agent crew
                         token_usage = int(len(project_desc.split()) * 1.5) + 6500
                     st.session_state.exec_time = exec_time
                     st.session_state.total_tokens = token_usage
@@ -85,7 +86,7 @@ with col1:
                     else:
                         st.write(result)
 
-                    st.rerun()  # Refresh to show updated sidebar metrics
+                    st.rerun()  # Refresh sidebar ROI metrics now that session state is populated
 
                 except Exception as e:
                     st.error(f"Error during execution: {e}")

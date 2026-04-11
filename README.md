@@ -8,6 +8,12 @@ This application hosts a specialized Multi-Agent simulation designed to audit pr
 
 This system avoids the "Lost in the Middle" contextual limitations of giant single-prompt LLMs by breaking the evaluation process down chronologically across three specialized agent personas.
 
+## 🧪 Policy Experimentation (A/B Testing)
+EthosAI features a built-in **Governance Experimentation Framework** to evaluate the impact of different AI policies:
+- **Variant Testing**: Compare a "Standard Compliance" prompt against a "Strict Safety" variant.
+- **Side-by-Side Evaluation**: Use the `experiment_runner.py` to capture and log agent responses for both variants simultaneously.
+- **LLM-as-a-Judge**: Position the platform for automatic evaluation of which variant better adheres to NIST or EU AI Act redlines.
+
 ### The CrewAI Agents
 - **Lead AI Compliance Researcher**: Equipped with dual-tooling. 
   1. `Local Policy DB Search`: Pulls local private Chroma embeddings chunks.

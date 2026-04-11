@@ -59,38 +59,42 @@ class ComplianceForecaster:
     Uses linear regression to forecast future compliance drift and maturity.
     """
     
-    def __init__(self):
-        self.model = LinearRegression()
-
     def predict_maturity_drift(self, historical_scores: List[float]) -> Dict[str, Any]:
         """
         Forecasts the next compliance score based on historical trend.
         Returns the forecast, trend direction, and drift rate.
         """
         if len(historical_scores) < 2:
-            return {"forecast": None, "drift_rate": 0, "status": "Insufficient Data"}
+            return {
+                "current_score": historical_scores[0] if historical_scores else None,
+                "forecast_next_score": None,
+                "drift_rate_per_audit": 0,
+                "trend": "Insufficient Data",
+                "is_risk_alert": False,
+            }
 
         # Prepare data for regression (X = time index, y = score)
         X = np.array(range(len(historical_scores))).reshape(-1, 1)
         y = np.array(historical_scores)
-        
-        self.model.fit(X, y)
-        
+
+        model = LinearRegression()
+        model.fit(X, y)
+
         # Predict the next point (N+1)
         next_index = np.array([[len(historical_scores)]])
-        forecast = self.model.predict(next_index)[0]
-        
+        forecast = model.predict(next_index)[0]
+
         # Calculate drift (slope)
-        drift = self.model.coef_[0]
-        
+        drift = model.coef_[0]
+
         status = "IMPROVING" if drift < 0 else "STABLE" if drift == 0 else "DEGRADING"
-        
+
         return {
             "current_score": historical_scores[-1],
             "forecast_next_score": round(float(forecast), 2),
             "drift_rate_per_audit": round(float(drift), 2),
             "trend": status,
-            "is_risk_alert": forecast > 15  # Alert if forecasted to cross CRITICAL threshold
+            "is_risk_alert": bool(forecast > 15),  # Alert if forecasted to cross CRITICAL threshold
         }
 
     def simulate_historical_data(self, points: int = 5) -> List[float]:

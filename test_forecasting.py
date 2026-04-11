@@ -20,10 +20,35 @@ class TestComplianceForecasting(unittest.TestCase):
         self.assertGreater(result["forecast_next_score"], history[-1])
         self.assertTrue(result["is_risk_alert"])
 
-    def test_insufficient_data(self):
+    def test_stable_trend(self):
+        # All scores identical — slope is zero
+        history = [8.0, 8.0, 8.0, 8.0]
+        result = self.forecaster.predict_maturity_drift(history)
+        self.assertEqual(result["trend"], "STABLE")
+        self.assertAlmostEqual(result["drift_rate_per_audit"], 0.0)
+
+    def test_minimum_valid_input(self):
+        # Exactly two points — the minimum required for a valid forecast
+        history = [5.0, 7.0]
+        result = self.forecaster.predict_maturity_drift(history)
+        self.assertEqual(result["trend"], "DEGRADING")
+        self.assertIsNotNone(result["forecast_next_score"])
+
+    def test_insufficient_data_returns_consistent_keys(self):
+        # Single point should return the same key shape as a normal result
         history = [10.0]
         result = self.forecaster.predict_maturity_drift(history)
-        self.assertIsNone(result["forecast"])
+        for key in ("current_score", "forecast_next_score", "drift_rate_per_audit", "trend", "is_risk_alert"):
+            self.assertIn(key, result, f"Missing key '{key}' in insufficient-data result")
+        self.assertIsNone(result["forecast_next_score"])
+        self.assertFalse(result["is_risk_alert"])
+
+    def test_empty_history_returns_consistent_keys(self):
+        # Empty list should not crash and should return the same key shape
+        result = self.forecaster.predict_maturity_drift([])
+        for key in ("current_score", "forecast_next_score", "drift_rate_per_audit", "trend", "is_risk_alert"):
+            self.assertIn(key, result, f"Missing key '{key}' in empty-history result")
+        self.assertIsNone(result["forecast_next_score"])
 
 if __name__ == "__main__":
     unittest.main()

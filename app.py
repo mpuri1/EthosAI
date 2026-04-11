@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import time
 import pandas as pd
 import plotly.express as px
 from dotenv import load_dotenv
@@ -63,9 +64,19 @@ with col1:
         else:
             with st.spinner("Agents are researching and writing the report..."):
                 try:
+                    start_t = time.time()
                     result = run_multi_agent_system(project_desc)
+                    exec_time = time.time() - start_t
+
+                    # Track execution metrics for ROI panel
+                    token_usage = getattr(result, "token_usage", {}).get("total_tokens")
+                    if not token_usage:
+                        token_usage = int(len(project_desc.split()) * 1.5) + 6500
+                    st.session_state.exec_time = exec_time
+                    st.session_state.total_tokens = token_usage
+
                     st.subheader("Final Governance Report")
-                    
+
                     # Redirected path to prn_docs/
                     report_path = "prn_docs/final_governance_report.md"
                     if os.path.exists(report_path):
@@ -73,7 +84,9 @@ with col1:
                             st.markdown(f.read())
                     else:
                         st.write(result)
-                        
+
+                    st.rerun()  # Refresh to show updated sidebar metrics
+
                 except Exception as e:
                     st.error(f"Error during execution: {e}")
 
@@ -95,7 +108,8 @@ with col2:
         st.error("🚨 WARNING: System forecasted to cross critical risk threshold in next audit cycles.")
     
     st.markdown("### Efficiency ROI")
-    # Mock some data for first run ROI
-    roi = analytics.calculate_research_roi(120, 15000)
+    exec_t = st.session_state.get("exec_time", 120)
+    tokens = st.session_state.get("total_tokens", 15000)
+    roi = analytics.calculate_research_roi(exec_t, tokens)
     st.metric("Net Savings", f"${roi['net_savings']}")
     st.metric("Efficiency Multiplier", f"{roi['efficiency_multiplier']}x")

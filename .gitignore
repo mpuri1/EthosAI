@@ -13,6 +13,7 @@ wheels/
 *.csv
 *.json
 *.jsonl
+# Project-specific Isolation (Private Artifacts)
+prn_docs/
+chroma_db/
 .env
-final_governance_report.md
-WORK_LOG.md

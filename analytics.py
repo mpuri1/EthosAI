@@ -1,5 +1,7 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 import time
+import numpy as np
+from sklearn.linear_model import LinearRegression
 
 class ComplianceAnalytics:
     """
@@ -50,3 +52,56 @@ class ComplianceAnalytics:
             "severity_tier": severity,
             "status": "🛑 BLOCKED" if severity == "CRITICAL" else "⚠️ CAUTION" if severity == "HIGH" else "✅ PASSED"
         }
+
+class ComplianceForecaster:
+    """
+    Predictive Governance Engine.
+    Uses linear regression to forecast future compliance drift and maturity.
+    """
+    
+    def predict_maturity_drift(self, historical_scores: List[float]) -> Dict[str, Any]:
+        """
+        Forecasts the next compliance score based on historical trend.
+        Returns the forecast, trend direction, and drift rate.
+        """
+        if len(historical_scores) < 2:
+            return {
+                "current_score": historical_scores[0] if historical_scores else None,
+                "forecast_next_score": None,
+                "drift_rate_per_audit": 0,
+                "trend": "Insufficient Data",
+                "is_risk_alert": False,
+            }
+
+        # Prepare data for regression (X = time index, y = score)
+        X = np.array(range(len(historical_scores))).reshape(-1, 1)
+        y = np.array(historical_scores)
+
+        model = LinearRegression()
+        model.fit(X, y)
+
+        # Predict the next point (N+1)
+        next_index = np.array([[len(historical_scores)]])
+        forecast = model.predict(next_index)[0]
+
+        # Calculate drift (slope)
+        drift = model.coef_[0]
+
+        # Scores represent risk level (higher = worse compliance), so negative drift is good.
+        status = "IMPROVING" if drift < 0 else "STABLE" if drift == 0 else "DEGRADING"
+
+        return {
+            "current_score": historical_scores[-1],
+            "forecast_next_score": round(float(forecast), 2),
+            "drift_rate_per_audit": round(float(drift), 2),
+            "trend": status,
+            "is_risk_alert": bool(forecast > 15),  # Alert if forecasted to cross CRITICAL threshold
+        }
+
+    def simulate_historical_data(self, points: int = 5) -> List[float]:
+        """
+        Generates realistic simulation data for dashboard testing.
+        Shows a slight upward drift (increasing risk) over time.
+        """
+        base = [4, 5, 8, 6, 9] # Sample risk scores
+        return base[:points]
